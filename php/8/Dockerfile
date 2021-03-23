@@ -9,14 +9,19 @@ ENV BUILD_DEPS="${PHPIZE_DEPS} gettext-dev icu-dev" \
 RUN apk update \
   && apk add --no-cache ${BUILD_DEPS} \
   && pecl update-channels \
-  && echo '' | pecl install redis swoole \
-  && docker-php-ext-enable redis swoole \
-  && docker-php-ext-install intl gettext \
+  && echo '' | pecl install redis swoole mongodb \
+  && docker-php-ext-enable redis swoole mongodb \
+  && docker-php-ext-install intl gettext pcntl pdo_mysql \
   && apk del ${PHPIZE_DEPS} \
   && apk add --no-cache tzdata \
   && cp /usr/share/zoneinfo/Asia/Shanghai /etc/localtime \
   && apk del tzdata \
   && apk --no-cache add ${DEPS}
+
+RUN php -r "copy('https://install.phpcomposer.com/installer', 'composer-setup.php');" \
+  && php composer-setup.php \
+  && php -r "unlink('composer-setup.php');" \
+  && mv composer.phar /usr/local/bin/composer
 
 RUN mkdir -p /etc/supervisor/conf.d
 COPY conf/supervisord.conf /etc/supervisor/
@@ -25,6 +30,11 @@ COPY conf/fpm.run.conf /etc/supervisor/conf.d/
 
 COPY conf/fpm-pool.conf /etc/php/php-fpm.d/www.conf
 COPY conf/nginx.conf /etc/nginx/nginx.conf
+
+RUN chown -R www-data:www-data /var/www/html \
+  &&   chown -R www-data:www-data /run \
+  && chown -R www-data:www-data /var/lib/nginx \
+  && chown -R www-data:www-data /var/log/nginx
 
 EXPOSE 8080
 
