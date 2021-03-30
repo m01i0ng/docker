@@ -6,12 +6,11 @@ ENV BUILD_DEPS="${PHPIZE_DEPS} gettext-dev icu-dev" \
   DEPS="nginx supervisor" \
   TZ=Asia/Shanghai
 
-RUN apk update \
-  && apk add --no-cache ${BUILD_DEPS} \
+RUN apk add --no-cache ${BUILD_DEPS} zlib-dev libpng-dev libjpeg-turbo-dev \
   && pecl update-channels \
   && echo '' | pecl install redis swoole mongodb \
   && docker-php-ext-enable redis swoole mongodb \
-  && docker-php-ext-install intl gettext pcntl pdo_mysql \
+  && docker-php-ext-install -j$(nproc) intl gettext pcntl pdo_mysql gd \
   && apk del ${PHPIZE_DEPS} \
   && apk add --no-cache tzdata \
   && cp /usr/share/zoneinfo/Asia/Shanghai /etc/localtime \
