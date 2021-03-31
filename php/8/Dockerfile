@@ -37,5 +37,5 @@ RUN chown -R www-data:www-data /var/www/html \
 
 EXPOSE 8080
 
-ENTRYPOINT [ "/usr/bin/supervisord", "-c", "/etc/supervisor/supervisord.conf" ]
+CMD [ "/usr/bin/supervisord", "-c", "/etc/supervisor/supervisord.conf" ]
 HEALTHCHECK --timeout=10s CMD curl --silent --fail http://127.0.0.1:8080/fpm-ping
